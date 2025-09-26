@@ -1,0 +1,4 @@
+# All dependencies for knowledge-graph package
+# Install with: pip install -r requirements-all.txt
+-r requirements.txt
+-r requirements-dev.txt

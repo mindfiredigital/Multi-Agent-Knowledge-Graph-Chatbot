@@ -1,0 +1,23 @@
+# Core runtime dependencies for knowledge-graph package
+# Install with: pip install -r requirements.txt
+graphiti-core[google-genai]>=0.20.4
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+pypdf>=6.0.0
+openai>=1.107.3
+python-docx>=1.1.0
+beautifulsoup4>=4.12.0
+markdown>=3.5.0
+chardet>=5.2.0
+tiktoken>=0.5.0
+python-dotenv>=1.0.0
+openpyxl>=3.1.0
+pandas>=2.0.0
+# Multi-agent and RAG dependencies
+neo4j>=5.0.0
+sentence-transformers>=3.0.0
+PyMuPDF>=1.24.0
+langchain-aws>=0.2.3
+ragas>=0.1.13
+datasets>=2.19.0
+langchain-openai>=0.2.0

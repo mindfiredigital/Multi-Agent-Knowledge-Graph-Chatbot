@@ -1,0 +1,155 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel", "build>=1.3.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "knowledge-graph"
+version = "0.1.0"
+description = "Reusable library for building and querying knowledge graphs backed by Neo4j, powered by Graphiti and Gemini"
+readme = "README.md"
+license = "MIT"
+authors = [
+    {name = "Venkata Sai Chandrakanth Reddy Vemireddy", email = "chandrakanth.reddy@mindfiresolutions.com"},
+    {name = "Yogesh Modi", email = ""},
+    {name = "V Vamsi krishna", email = "vamsik@mindfiresolutions.com"}
+]
+maintainers = [
+    {name = "Venkata Sai Chandrakanth Reddy Vemireddy", email = "chandrakanth.reddy@mindfiresolutions.com"},
+    {name = "Yogesh Modi", email = ""},
+    {name = "V Vamsi krishna", email = "vamsik@mindfiresolutions.com"}
+]
+keywords = ["knowledge-graph", "neo4j", "graphiti", "gemini", "llm", "rag"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.12",
+]
+requires-python = ">=3.12"
+dependencies = [
+    "graphiti-core[google-genai]>=0.20.4",
+    "pydantic>=2.0.0",
+    "pydantic-settings>=2.0.0",
+    "pypdf>=6.0.0",
+    "openai>=1.107.3",
+    "python-docx>=1.1.0",
+    "beautifulsoup4>=4.12.0",
+    "markdown>=3.5.0",
+    "chardet>=5.2.0",
+    "tiktoken>=0.5.0",
+    "python-dotenv>=1.0.0",
+    "openpyxl>=3.1.0",
+    "pandas>=2.0.0",
+    # Multi-agent and RAG dependencies
+    "neo4j>=5.0.0",
+    "sentence-transformers>=3.0.0",
+    "PyMuPDF>=1.24.0",
+    "langchain-aws>=0.2.3",
+    "ragas>=0.1.13",
+    "datasets>=2.19.0",
+    "langchain-openai>=0.2.0",
+]
+
+[project.optional-dependencies]
+# Development dependencies
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.21.0",
+    "httpx>=0.24.0",
+    "black>=23.0.0",
+    "isort>=5.12.0",
+    "mypy>=1.0.0",
+    "flake8>=6.0.0",
+    "coverage>=7.10.7",
+]
+
+# Install everything (dev dependencies only now)
+all = [
+    "knowledge-graph[dev]",
+]
+
+[project.urls]
+Homepage = "https://github.com/mindfiredigital/Multi-Agent-Knowledge-Graph-Chatbot"
+Documentation = "https://github.com/mindfiredigital/Multi-Agent-Knowledge-Graph-Chatbot#readme"
+Issues = "https://github.com/mindfiredigital/Multi-Agent-Knowledge-Graph-Chatbot/issues"
+
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+knowledge_graph = [
+    "py.typed",
+    "v1/config/prompts.yaml",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py38']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["knowledge_graph"]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "-v --tb=short"
+asyncio_mode = "auto"
+
+[tool.coverage.run]
+source = ["src/knowledge_graph"]
+omit = ["*/tests/*", "*/test_*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[dependency-groups]
+dev = [
+    "coverage>=7.10.7",
+]

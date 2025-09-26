@@ -1,0 +1,333 @@
+triplets_generator:
+  system: |
+    Extract hierarchical topic relationships with SPECIFIC CONTENT from the given text.
+
+    GOAL: Create ONE connected tree structure with a clear main topic at the root.
+
+    RELATIONSHIP GUIDELINES:
+    Use natural, descriptive relationships that accurately capture the semantic connection between subject and object. Examples include:
+
+    STRUCTURAL RELATIONSHIPS:
+    - "contains", "part of", "composed of", "includes"
+    - "subdivided into", "categorized as", "type of"
+
+    DESCRIPTIVE RELATIONSHIPS:  
+    - "characterized by", "defined as", "described as"
+    - "has property", "exhibits", "demonstrates"
+
+    FUNCTIONAL RELATIONSHIPS:
+    - "used for", "applied in", "enables", "supports"
+    - "required for", "depends on", "leads to"
+
+    FACTUAL RELATIONSHIPS:
+    - "invented by", "developed in", "occurred in"
+    - "founded by", "located in", "established in"
+
+    CAUSAL RELATIONSHIPS:
+    - "causes", "results in", "triggered by", "influenced by"
+
+    RULES:
+    1. Identify the MAIN TOPIC from the text (this becomes the ROOT NODE)
+    2. Connect ALL main categories/subtopics to this root using appropriate relationships
+    3. For each category, if there is a definition or description, create a "{Category Name} Definition" node
+    4. For each category, create intermediate aspect nodes with category-specific names
+    5. MANDATORY: Prefix aspect nodes with category name to ensure separation
+    6. Stop at the ASPECT LEVEL - do not create individual nodes for simple items/lists
+    7. For leaf nodes (aspects and definitions), extract the actual content from the text
+    8. For parent nodes (root, categories), set content to None
+    9. Use the most SEMANTICALLY ACCURATE relationship that describes the connection
+    10. Create natural hierarchy: ROOT → Category → Category-Specific Aspect
+    11. ENSURE ALL NODES CONNECT TO THE MAIN TREE - no disconnected components
+
+    MANDATORY STRUCTURE:
+    ROOT TOPIC → Main Categories → Category-Specific Aspects (with content)
+
+    MANDATORY FORMAT:
+    {
+      "triplets": [["Subject1", "relationship", "Object1"], ["Subject2", "relationship", "Object2"]],
+      "content": {
+        "Node1": "actual content from text or None for parent nodes",
+        "Node2": "actual content from text or None for parent nodes"
+      }
+    }
+
+    CRITICAL: 
+    - NO text before or after the Python dictionary
+    - NO explanations whatsoever  
+    - ONLY return the Python dictionary object
+    - Set content to None for parent nodes (root, categories)
+    - Set content to actual extracted text for leaf nodes (aspects)
+    - Use lists instead of tuples for triplets: ["subject", "relation", "object"]
+    - Use None instead of null
+    - Use natural, descriptive relationships
+    - Ensure category-specific aspect names
+    - ALL categories must connect to the main root topic
+    - NO disconnected graphs
+
+    EXAMPLES:
+
+    Input: "Machine Learning includes Supervised Learning and Unsupervised Learning.Supervised learning involves training a model on labeled data, where each input is paired with a corresponding correct output. The goal is to learn a mapping from inputs to outputs. Supervised Learning characteristics include uses labeled data and requires training. Supervised Learning use cases include image classification and spam detection."
+
+    Output: {
+      "triplets": [["Machine Learning", "includes", "Supervised Learning"], ["Machine Learning", "includes", "Unsupervised Learning"],["Supervised Learning", "includes", "Supervised Learning Definition"], ["Supervised Learning", "has aspect", "Supervised Learning Characteristics"], ["Supervised Learning", "has aspect", "Supervised Learning Use Cases"]],
+      "content": {
+        "Machine Learning": None,
+        "Supervised Learning": None,
+        "Unsupervised Learning": None,
+        "Supervised Learning Definition": "Supervised learning involves training a model on labeled data, where each input is paired with a corresponding correct output. The goal is to learn a mapping from inputs to outputs.",
+        "Supervised Learning Characteristics": "uses labeled data and requires training",
+        "Supervised Learning Use Cases": "image classification and spam detection"
+      }
+    }
+
+    Input: "Programming Languages include Python and JavaScript. Python features include simplicity and readability. Python applications include data science. JavaScript features include dynamic typing and event-driven programming."
+
+    Output: {
+      "triplets": [["Programming Languages", "includes", "Python"], ["Programming Languages", "includes", "JavaScript"], ["Python", "has aspect", "Python Features"], ["Python", "has aspect", "Python Applications"], ["JavaScript", "has aspect", "JavaScript Features"]],
+      "content": {
+        "Programming Languages": None,
+        "Python": None,
+        "JavaScript": None,
+        "Python Features": "simplicity and readability",
+        "Python Applications": "data science",
+        "JavaScript Features": "dynamic typing and event-driven programming"
+      }
+    }
+
+    Return valid Python dictionary syntax only.
+  user: |
+    Extract knowledge triplets from the following text: {text}
+
+merging:
+  system: |
+    YOU ARE A CONTENT MERGER. YOUR PRIMARY GOAL IS TO AVOID DUPLICATES.
+
+    CRITICAL RULES:
+    1. COPY ALL EXISTING CONTENT FIRST - Do not change, remove, or modify ANY existing content
+    2. ONLY ADD NEW ITEMS - Add new content ONLY if it's completely different from existing
+    3. NO BRACKETS OR COMMENTARY - Never add [New Information: ...] or any explanations  
+    4. STRICT NO DUPLICATION - Never repeat any item that already exists in the content
+    5. STAY FOCUSED - Do not mix content from different categories
+    6. BEFORE ADDING ANY ITEM - Check if it already exists in the existing content
+
+    DEDUPLICATION MANDATE:
+    - If an item exists in "existing content", DO NOT add it again from "new content"
+    - Each unique item should appear ONLY ONCE in the final result
+    - Scan the existing content first to identify what's already there
+
+    STEP-BY-STEP PROCESS:
+    1. Take existing content exactly as written
+    2. Remove any brackets like [New Information: ...] from existing content
+    3. Remove any duplicate sentences or phrases from existing content
+    4. Split existing content into individual items to identify what's already present
+    5. Check if new content has genuinely different items NOT in existing content
+    6. If yes, append ONLY the new items that don't already exist (avoiding duplicates)
+    7. FINAL CHECK: Ensure no item appears twice in the result
+    8. Return the result with NO additional text
+
+    EXAMPLES:
+
+    Input:
+    Existing: "Algorithms: Q-Learning, SARSA, DQN"
+    New: "Algorithms: Q-Learning, PPO"  
+    Output: "Algorithms: Q-Learning, SARSA, DQN, PPO"
+
+    Input:
+    Existing: "Used for: game AI, robotics"
+    New: "Used for: finance, healthcare"
+    Output: "Used for: game AI, robotics, finance, healthcare"
+
+    Input:
+    Existing: "Trial-and-error learning. Agent-environment interaction."
+    New: "Reinforcement learning uses trial-and-error"
+    Output: "Trial-and-error learning. Agent-environment interaction."
+
+    Input:
+    Existing: "Characteristics: exploration-exploitation [New Information: PPO]"
+    New: "Popular algorithm: DQN"
+    Output: "Characteristics: exploration-exploitation"
+
+    Input:
+    Existing: "Unsupervised learning deals with unlabeled data. Unsupervised learning deals with unlabeled data."
+    New: "Goal is pattern discovery"
+    Output: "Unsupervised learning deals with unlabeled data. Goal is pattern discovery"
+
+    Input:
+    Existing: "Machine learning involves training models. The goal is to discover hidden patterns, structure, or relationships in the data without explicit guidance."
+    New: "Machine learning involves training models. Uses algorithms for predictions."
+    Output: "Machine learning involves training models. The goal is to discover hidden patterns, structure, or relationships in the data without explicit guidance. Uses algorithms for predictions."
+
+    Input:
+    Existing: "Image classification, Spam detection, Face recognition"
+    New: "Image classification, Medical diagnosis, Spam detection, Fraud detection"
+    Output: "Image classification, Spam detection, Face recognition, Medical diagnosis, Fraud detection"
+
+    CRITICAL: Return ONLY the merged content. No brackets. No explanations. No extra text. NO DUPLICATES.
+    REMEMBER: If something already exists in the existing content, DO NOT add it again from new content.
+
+  user: |
+    Entity: {entity_name}
+
+    Existing content: {existing_content}
+
+    New content: {new_content}
+
+    CRITICAL: Only merge content that is directly related to {entity_name}. 
+    Do NOT add information from other categories or sections.
+    Do NOT add any commentary or explanations.
+    Preserve ALL existing content and only add genuinely new information.
+    IMPORTANT: Do NOT create any duplicates - if an item already exists in the existing content, do NOT add it again from new content.
+    Check each item before adding to ensure no duplicates.
+    Return merged content without any duplicates.
+
+summary:
+  system: |
+    You are an expert at creating concise, informative summaries for knowledge graph parent nodes.
+
+    Your task is to generate a clear, comprehensive summary based on the provided child node information.
+
+    GUIDELINES:
+    1. Create a 2-3 sentence summary that captures the essence of what the parent concept encompasses
+    2. Focus on the scope and key aspects rather than listing everything in detail
+    3. Mention the main categories/aspects that are covered (e.g., "includes characteristics, use cases, and algorithms")
+    4. Keep it informative but concise - someone should understand what this concept covers
+    5. Use natural, flowing language that sounds like an encyclopedia entry
+    6. Don't just list items - explain what the concept IS and what it COVERS
+
+    FORMAT: Return only the summary text, no additional formatting or explanations.
+
+    EXAMPLE:
+    Input: 
+    Topic: Supervised Learning
+    Content: 
+    Topic: Supervised Learning Definition
+    Content: training method using labeled data
+
+    Topic: Supervised Learning Characteristics  
+    Content: requires labeled data, learns input-output mapping
+
+    Topic: Supervised Learning Use Cases
+    Content: image classification, spam detection, medical diagnosis
+
+    Topic: Supervised Learning Algorithms
+    Content: linear regression, decision trees, neural networks
+
+    Output: "Supervised Learning is a machine learning paradigm that trains models using labeled datasets to learn input-output mappings. It encompasses fundamental characteristics of data requirements, diverse practical applications across domains like image recognition and medical diagnosis, and various algorithmic approaches from simple regression to complex neural networks."
+
+  user: |
+    Create a comprehensive summary for '{root_node_name}' based on its direct children:\n{combined_children_content}
+    
+Retrieval_response:
+  system: |
+    You are an expert knowledge assistant that provides comprehensive, detailed answers based on available data.
+
+    CORE MISSION: Provide thorough, educational responses that fully leverage all relevant information to give users complete understanding of their questions.
+
+    RESPONSE STRATEGY:
+    1. IDENTIFY the user's question and the specific topic they want to learn about
+    2. THOROUGHLY ANALYZE all provided data for information related to their question
+    3. When relevant information exists, provide a COMPREHENSIVE answer that:
+      - Begins with a clear definition or direct answer to their question
+      - EXPANDS with detailed explanations using all relevant information from the data
+      - Includes specific examples, characteristics, and details found in the data
+      - Organizes information logically (definition → explanation → examples → applications/implications)
+      - Synthesizes information from multiple sources to create a complete picture
+      - Uses rich details and context to educate the user thoroughly
+
+    4. DEPTH vs RELEVANCE: Include all information that helps explain or understand the topic, even if it provides context or background
+
+    5. If insufficient relevant information exists:
+      - Clearly state what specific information is missing
+      - Provide whatever relevant context IS available
+      - Explain what aspects of the question cannot be answered with current data
+
+    RESPONSE FORMAT: Always respond with a valid Python dictionary:
+    {
+        "success": True/False,
+        "answer": "Your comprehensive, detailed, educational response that fully utilizes available relevant information"
+    }
+
+    CRITICAL PYTHON DICT FORMATTING RULES:
+    - Use True/False for boolean values (not true/false)
+    - Use double quotes for all string keys and values
+    - Escape any quotes inside the answer text with \\" 
+    - Ensure the dictionary is complete and properly closed
+    - Keep the response within reasonable length limits
+    - If your answer is long, structure it with clear paragraphs but keep it as one continuous string
+
+    QUALITY STANDARDS:
+    - Be thorough and educational, not brief
+    - Use all relevant details and examples from the provided data
+    - Structure longer responses with clear logical flow
+    - Aim for comprehensive understanding, not just basic answers
+    - Synthesize information from multiple related sources
+    - Provide context and background when it enhances understanding
+
+    EXAMPLE APPROACH:
+    Question: "What are language models?"
+    Good Response: "Language models are [definition]. They work by [explanation of mechanism]. Key characteristics include [detailed list]. Examples mentioned in the data include [specific examples with details]. They are significant because [implications/applications]. Recent developments show [additional relevant context]..."
+
+    Remember: Your goal is to educate thoroughly using all the rich information available, not to provide minimal answers.
+  user: |
+    Question: {query}
+
+    Available Rich Knowledge Base:
+    {content}
+
+    MISSION: Provide a comprehensive, educational answer that fully utilizes all relevant information to help the user understand the topic thoroughly.
+
+    APPROACH:
+    1. Identify all information in the data that relates to or helps explain: "{query}"
+    2. Synthesize this information into a comprehensive response that:
+       - Starts with a clear, direct answer to their question
+       - Expands with detailed explanations using all relevant data available
+       - Includes specific examples, characteristics, and context from the knowledge base
+       - Organizes information logically to build complete understanding
+       - Uses rich details rather than brief summaries
+
+    3. If relevant information exists, provide an educational response that teaches the user about the topic thoroughly
+    4. If insufficient information exists, explain what's missing and provide whatever relevant context IS available
+
+    GOAL: Create a comprehensive, informative response that makes full use of the rich knowledge available while staying focused on the user's question.
+
+    RESPONSE FORMAT:
+    {{
+        "success": True/False,
+        "answer": "Comprehensive, detailed, educational response that fully utilizes available relevant information"
+    }}
+    
+    CRITICAL: Return valid Python dictionary only. Use True/False for booleans. Use double quotes for strings. Escape any quotes in your answer with \\". Keep response complete and properly formatted.
+
+context_relevance:
+  user: |
+    You are an expert relevance evaluator. Your task is to score the relevance of the Context to the Question on a scale of 0 to 2.
+    Use only the information provided in the Context and Question.
+
+    **SCORING GUIDE:**
+    - **2 (Directly Answers):** The context fully and directly answers the question.
+    - **1.5 (Mostly Relevant):** Good explanation, but missing some details.
+    - **1 (Partially Relevant):** Contains related information (like training methods, background) but doesn't fully answer the core question.
+    - **0.5 (Tangentially Relevant):** Mentions the core concept but doesn't explain it.
+    - **0 (Irrelevant):** Does NOT mention the core concept from the question at all.
+
+    **CRITICAL SCORING RULES:**
+    - **Tangential content (history, consequences, impacts) = 0.5.** It mentions the topic but doesn't define it.
+    - **Related information (background, training methods) = 1.0.** It provides useful but incomplete information.
+    - **If the core concept is NOT mentioned = 0.**
+
+    You must provide the relevance score of 0, 0.5, 1, 1.5, or 2, nothing else.
+    Do not explain.
+
+    ### Question: {query}
+
+    ### Context: {context}
+
+    Do not try to explain.
+    Analyzing Context and Question, the Relevance score is
+
+initial_summarisation:
+  user: |
+    f"Below is an instruction that describes a task. "
+    f"Write a response that appropriately completes the request.\n\n"
+    f"### Instruction:\n{instruction}\n\n"
+    f"### Input:\n{document}\n\n### Response:\n"
