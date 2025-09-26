@@ -1,6 +1,36 @@
 # Knowledge Graph Library
 
 A reusable library for building and querying knowledge graphs backed by Neo4j, powered by Graphiti and Gemini.
+
+## Table of Contents
+- [Getting Started](#getting-started)
+- [Installation](#installation)
+  - [From Wheel File](#from-wheel-file-recommended)
+  - [From Source](#from-source-development)
+  - [Pip Package](#pip-package-coming-soon)
+- [Configuration](#configuration)
+  - [Required Environment Variables](#required-environment-variables)
+  - [Optional Environment Variables](#optional-environment-variables)
+- [Quick Start](#quick-start)
+  - [KnowledgeGraphClientV2](#knowledgegraphclientv2-recommended---currentdefault)
+  - [KnowledgeGraphClientV1](#knowledgegraphclientv1-legacy---multi-agent-architecture)
+- [Client Comparison](#client-comparison)
+  - [KnowledgeGraphClientV2](#-knowledgegraphclientv2-recommended---graphiti-based)
+  - [KnowledgeGraphClientV1](#knowledgegraphclientv1-multi-agent-system)
+  - [Choosing Between V1 and V2](#choosing-between-v1-and-v2)
+- [Namespacing](#namespacing-group_id)
+- [Supported Document Types](#supported-document-types)
+- [Acknowledgments](#acknowledgments)
+
+## Getting Started
+
+1. **Set up Neo4j**: Install and start Neo4j database
+2. **Get Google API Key**: Visit [Google AI Studio](https://aistudio.google.com/apikey) to create an API key
+3. **Install the library**: Use the wheel file installation method below
+4. **Set environment variables**: Configure the required environment variables
+5. **Initialize client**: Use `KnowledgeGraphClient(group_id="your_namespace")` for V2
+6. **Build indices**: Call `await client.build_indices_and_constraints()` once after setup
+
 ## Installation
 
 ### From Wheel File (Recommended)
@@ -53,6 +83,34 @@ We plan to distribute this package via PyPI for easy installation:
 pip install knowledge-graph  # Coming soon
 ```
 
+## Configuration
+
+### Required Environment Variables
+
+Before using the library, set these environment variables:
+
+```bash
+# Neo4j Database (Required)
+export NEO4J_URI="bolt://localhost:7687"
+export NEO4J_USER="neo4j"
+export NEO4J_PASSWORD="your_neo4j_password"
+
+# Google Gemini API (Required for V2, Optional for V1)
+export GOOGLE_API_KEY="your_google_api_key_here"
+```
+
+### Optional Environment Variables
+
+```bash
+# Google Gemini Model Configuration (V2 only)
+export GOOGLE_LLM_MODEL="gemini-2.5-flash"                    # LLM for answer generation
+export GOOGLE_EMBEDDING_MODEL="embedding-001"                 # Text embeddings
+export GOOGLE_RERANKER_MODEL="gemini-2.5-flash-lite"          # Search result reranking
+export GEMINI_OPENAI_BASE="https://generativelanguage.googleapis.com/v1beta/openai/"
+```
+
+NOTE : For KnowledgeGraphClientV1 (Legacy), refer to the `env.example` file in the repository for additional environment variables and configuration options specific to the multi-agent system setup.
+
 ## Quick Start
 
 The library provides two client implementations. **We recommend using V2 (KnowledgeGraphClient) as it is easier to setup and use with modern infrastructure.**
@@ -96,9 +154,7 @@ result = await client.search("What is convolution?")  # raw retrieval output
 print(result)
 ```
 
-### KnowledgeGraphClientV1 (Legacy - Multi-Agent Architecture)
-
-**⚠️ V1 is a legacy implementation and not recommended for new projects.** It requires complex setup with multiple dependencies and specialized infrastructure.
+### KnowledgeGraphClientV1 (Multi-Agent Architecture)
 
 Alternative implementation using a multi-agent blackboard system:
 
@@ -133,31 +189,20 @@ print(result)
 
 ## Client Comparison
 
-### 🏆 KnowledgeGraphClientV2 (Recommended - Graphiti-based)
-
-**The modern, production-ready implementation that we strongly recommend for all new projects.**
-
-- **✅ Architecture**: Uses Graphiti framework with Google Gemini for robust, scalable knowledge graphs
-- **✅ Namespacing**: Uses `group_id` for data isolation (mandatory parameter)
-- **✅ Query Processing**: Direct Graphiti search and retrieval with advanced RAG capabilities
-- **✅ Document Processing**: Comprehensive support for PDF, DOCX, Markdown, HTML, and TXT files with intelligent token merging
-- **✅ Dependencies**: Simple setup with Google API key and Neo4j - no complex infrastructure needed
-- **✅ Setup**: Easy to configure and deploy in production environments
-- **✅ Performance**: Optimized for speed and scalability with modern LLM infrastructure
-- **✅ Best for**: Production applications, enterprise deployments, and most use cases
-
-### KnowledgeGraphClientV1 (Multi-Agent System)
-
-**Alternative implementation using a multi-agent blackboard architecture.**
-
-- **Architecture**: Multi-agent blackboard system with specialized agents for different tasks
-- **Namespacing**: Uses `group_id` for data organization
-- **Query Processing**: Agent-based retrieval system with confidence scoring
-- **Document Processing**: Supports ONLY PDF files with right formatting using custom preprocessing pipeline 
-- **Dependencies**: Requires sentence-transformers, OpenAI API, AWS Bedrock API and Neo4j
-- **Setup**: Requires additional infrastructure setup and configuration to run qwen-0.6B and embedding models
-- **Performance**: Designed for complex multi-agent workflows
-- **Best for**: Applications requiring specialized domain agents and complex reasoning workflows
+| Feature | KnowledgeGraphClientV2 (Recommended) | KnowledgeGraphClientV1 |
+|---------|----------------------------------------|--------------------------------|
+| **Status** | Modern, production-ready | Legacy, complex setup required |
+| **Architecture** | Graphiti framework with Google Gemini | Multi-agent blackboard system |
+| **Namespacing** | `group_id` for data isolation (mandatory) | `group_id` for data isolation (mandatory) |
+| **Query Processing** | Direct Graphiti search with RAG | Agent-based retrieval with confidence scoring |
+| **Document Support** | PDF, DOCX, Markdown, HTML, TXT | PDF only (with formatting requirements) |
+| **Token Processing** | Intelligent chunking and merging | Basic preprocessing pipeline |
+| **Dependencies** | Simple: Google API key + Neo4j | Complex: sentence-transformers, OpenAI API, AWS Bedrock, Neo4j, qwen-0.6B |
+| **Setup Effort** | ✅ Easy configuration and deployment | ⚠️ Complex infrastructure setup needed |
+| **Performance** | ✅ Optimized for speed and scalability | ⚙️ Optimized for complex workflows |
+| **Best For** | Production deployments, general use cases | Specialized domain agents, complex reasoning |
+| **Infrastructure** | Minimal requirements | Requires dedicated compute resources |
+| **Maintenance** | Low maintenance overhead | Higher maintenance needs |
 
 ### Choosing Between V1 and V2
 
@@ -232,43 +277,11 @@ Each document type is processed by specialized processors that:
 - Handle encoding and format-specific issues
 - Merge chunks intelligently to respect token limits
 
-## Configuration
+## Acknowledgments
 
-### Required Environment Variables
+This project would not be possible without the following open-source technologies and their communities:
 
-Before using the library, set these environment variables:
-
-```bash
-# Neo4j Database (Required)
-export NEO4J_URI="bolt://localhost:7687"
-export NEO4J_USER="neo4j"
-export NEO4J_PASSWORD="your_neo4j_password"
-
-# Google Gemini API (Required for V2, Optional for V1)
-export GOOGLE_API_KEY="your_google_api_key_here"
-```
-
-### Optional Environment Variables
-
-```bash
-# Google Gemini Model Configuration (V2 only)
-export GOOGLE_LLM_MODEL="gemini-2.5-flash"                    # LLM for answer generation
-export GOOGLE_EMBEDDING_MODEL="embedding-001"                 # Text embeddings
-export GOOGLE_RERANKER_MODEL="gemini-2.5-flash-lite"          # Search result reranking
-export GEMINI_OPENAI_BASE="https://generativelanguage.googleapis.com/v1beta/openai/"
-
-# OpenAI API (V1 only - if not using Gemini)
-export OPENAI_API_KEY="your_openai_api_key_here"             # Only needed for V1
-```
-
-### Getting Started
-
-1. **Set up Neo4j**: Install and start Neo4j database
-2. **Get Google API Key**: Visit [Google AI Studio](https://aistudio.google.com/apikey) to create an API key
-3. **Install the library**: Use the wheel file installation method above
-4. **Set environment variables**: Configure the required environment variables
-5. **Initialize client**: Use `KnowledgeGraphClient(group_id="your_namespace")` for V2
-6. **Build indices**: Call `await client.build_indices_and_constraints()` once after setup
-
-
-
+- **[Neo4j](https://neo4j.com/)** - The graph database powering our knowledge graph infrastructure
+- **[Graphiti](https://help.getzep.com/graphiti/getting-started/welcome)** - The modern graph framework enabling efficient knowledge operations
+- **[Google Gemini](https://cloud.google.com/vertex-ai)** - The advanced language model powering our natural language understanding
+- **[UV](https://github.com/astral-sh/uv)** - The modern Python package installer and resolver
