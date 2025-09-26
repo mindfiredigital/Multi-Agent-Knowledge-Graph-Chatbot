@@ -27,9 +27,7 @@ A reusable library for building and querying knowledge graphs backed by Neo4j, p
 1. **Set up Neo4j**: Install and start Neo4j database
 2. **Get Google API Key**: Visit [Google AI Studio](https://aistudio.google.com/apikey) to create an API key
 3. **Install the library**: Use the wheel file installation method below
-4. **Set environment variables**: Configure the required environment variables
-5. **Initialize client**: Use `KnowledgeGraphClient(group_id="your_namespace")` for V2
-6. **Build indices**: Call `await client.build_indices_and_constraints()` once after setup
+4. **Set environment variables**: Configure the required environment variables (refer env.example file)
 
 ## Installation
 
